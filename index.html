@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lead Generation — Apify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #273549;
+    --border: #334155;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --accent-dim: rgba(59,130,246,.15);
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --radius: 10px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+
+  /* ── Layout ────────────────────────────────────── */
+  .container { max-width: 960px; margin: 0 auto; }
+
+  /* ── Header ────────────────────────────────────── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .logo h1 { font-size: 1.2rem; font-weight: 700; letter-spacing: -.3px; }
+  .logo p { font-size: .75rem; color: var(--muted); margin-top: 1px; }
+
+  /* ── Settings panel ────────────────────────────── */
+  .settings-toggle {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .85rem;
+    color: var(--muted);
+    transition: border-color .2s, color .2s;
+  }
+  .settings-toggle:hover { border-color: var(--accent); color: var(--text); }
+  .settings-toggle svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  .settings-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .settings-panel.open { display: block; }
+  .settings-panel label { font-size: .8rem; color: var(--muted); display: block; margin-bottom: 6px; }
+  .settings-panel .field-row { display: flex; gap: 10px; align-items: flex-end; }
+  .settings-panel input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: .9rem;
+    font-family: monospace;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .settings-panel input:focus { border-color: var(--accent); }
+  .btn-save {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s;
+    white-space: nowrap;
+  }
+  .btn-save:hover { background: var(--accent-hover); }
+  .token-status {
+    margin-top: 8px;
+    font-size: .78rem;
+    color: var(--success);
+    display: none;
+  }
+
+  /* ── Card ──────────────────────────────────────── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  /* ── Mode Toggle ───────────────────────────────── */
+  .mode-toggle {
+    display: flex;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+    width: fit-content;
+    margin-bottom: 24px;
+  }
+  .mode-btn {
+    padding: 8px 20px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: .85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .2s, color .2s;
+  }
+  .mode-btn.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* ── Form ──────────────────────────────────────── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.full { grid-column: 1 / -1; }
+
+  .field label {
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+
+  .field input[type="text"],
+  .field input[type="number"] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: .9rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color .2s;
+    width: 100%;
+  }
+  .field input:focus { border-color: var(--accent); }
+
+  /* ── Tag Input ─────────────────────────────────── */
+  .tag-input-wrapper {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    cursor: text;
+    min-height: 44px;
+    align-items: center;
+    transition: border-color .2s;
+  }
+  .tag-input-wrapper:focus-within { border-color: var(--accent); }
+
+  .tag {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid rgba(59,130,246,.3);
+    border-radius: 5px;
+    padding: 3px 8px;
+    font-size: .8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+  .tag-remove {
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    font-size: .9rem;
+    line-height: 1;
+    padding: 0;
+    opacity: .7;
+    display: flex; align-items: center;
+  }
+  .tag-remove:hover { opacity: 1; }
+
+  .tag-text-input {
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-size: .9rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    flex: 1;
+    min-width: 120px;
+    padding: 3px 2px;
+  }
+  .tag-hint { font-size: .72rem; color: var(--muted); margin-top: 4px; }
+
+  /* ── Submit Button ─────────────────────────────── */
+  .btn-submit {
+    margin-top: 20px;
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-submit:hover:not(:disabled) { background: var(--accent-hover); }
+  .btn-submit:active:not(:disabled) { transform: scale(.99); }
+  .btn-submit:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* ── Progress ──────────────────────────────────── */
+  .progress-card { display: none; }
+  .progress-card.visible { display: block; }
+
+  .progress-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .status-label { font-size: .9rem; font-weight: 500; }
+  .status-msg { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+
+  .progress-bar-track {
+    height: 6px;
+    background: var(--bg);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 12px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width .4s ease;
+    animation: progress-pulse 2s ease-in-out infinite;
+  }
+  @keyframes progress-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .6; }
+  }
+
+  /* ── Results ───────────────────────────────────── */
+  .results-card { display: none; }
+  .results-card.visible { display: block; }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .results-count { font-size: .95rem; font-weight: 600; }
+  .results-count span { color: var(--accent); }
+
+  .btn-export {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 8px 16px;
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-export:hover { border-color: var(--accent); background: var(--accent-dim); }
+
+  /* ── Table ─────────────────────────────────────── */
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .82rem;
+    min-width: 680px;
+  }
+  thead th {
+    background: var(--surface2);
+    padding: 11px 14px;
+    text-align: left;
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    position: sticky;
+    top: 0;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  thead th:hover { color: var(--text); }
+  thead th .sort-icon { margin-left: 4px; opacity: .4; }
+  thead th.sorted .sort-icon { opacity: 1; color: var(--accent); }
+
+  tbody tr {
+    border-top: 1px solid var(--border);
+    transition: background .15s;
+  }
+  tbody tr:hover { background: var(--surface2); }
+
+  td {
+    padding: 10px 14px;
+    vertical-align: middle;
+    color: var(--text);
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  td.muted { color: var(--muted); }
+
+  td a {
+    color: var(--accent);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  td a:hover { text-decoration: underline; }
+
+  .pill {
+    display: inline-block;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: .72rem;
+    font-weight: 600;
+  }
+
+  /* ── Error ─────────────────────────────────────── */
+  .error-banner {
+    background: rgba(239,68,68,.12);
+    border: 1px solid rgba(239,68,68,.35);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: .85rem;
+    color: #fca5a5;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .error-banner.visible { display: block; }
+
+  /* ── Form section hide/show ─────────────────────── */
+  .form-section { display: none; }
+  .form-section.active { display: contents; }
+
+  /* ── Empty state ────────────────────────────────── */
+  .empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--muted);
+  }
+  .empty svg { margin-bottom: 12px; opacity: .4; }
+  .empty p { font-size: .9rem; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🎯</div>
+      <div>
+        <h1>Lead Generation</h1>
+        <p>Powered by Apify</p>
+      </div>
+    </div>
+    <button class="settings-toggle" id="settingsToggle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+      </svg>
+      API Settings
+    </button>
+  </div>
+
+  <!-- Settings Panel -->
+  <div class="settings-panel" id="settingsPanel">
+    <label for="tokenInput">Apify API Token</label>
+    <div class="field-row">
+      <input type="password" id="tokenInput" placeholder="apify_api_xxxxxxxxxxxxxxxx" autocomplete="off">
+      <button class="btn-save" id="saveToken">Save Token</button>
+    </div>
+    <div class="token-status" id="tokenStatus">✓ Token saved to local storage</div>
+    <p style="margin-top:10px;font-size:.75rem;color:var(--muted)">
+      Your token is stored locally in your browser and never sent anywhere except directly to api.apify.com.
+      Get yours at <strong>apify.com/account/integrations</strong>.
+    </p>
+  </div>
+
+  <!-- Search Card -->
+  <div class="card">
+    <!-- Mode Toggle -->
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="modeIndustry" data-mode="industry">By Industry</button>
+      <button class="mode-btn" id="modeCompany" data-mode="company">By Company</button>
+    </div>
+
+    <!-- Error Banner -->
+    <div class="error-banner" id="errorBanner"></div>
+
+    <form id="searchForm">
+      <div class="form-grid">
+
+        <!-- BY INDUSTRY FIELDS -->
+        <div class="field full form-section active" id="sectionIndustry1">
+          <label>Sectors / Industries</label>
+          <div class="tag-input-wrapper" id="industryTagWrapper">
+            <input class="tag-text-input" id="industryTagInput" placeholder="e.g. Technology, Finance…">
+          </div>
+          <span class="tag-hint">Press Enter or comma to add each sector</span>
+        </div>
+
+        <div class="field form-section active" id="sectionIndustry2">
+          <label>Job Roles</label>
+          <div class="tag-input-wrapper" id="roleTagWrapper">
+            <input class="tag-text-input" id="roleTagInput" placeholder="e.g. CTO, VP Sales…">
+          </div>
+          <span class="tag-hint">Press Enter or comma to add each role</span>
+        </div>
+
+        <div class="field form-section active" id="sectionIndustry3">
+          <label>Location <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:.72rem">(optional)</span></label>
+          <input type="text" id="locationInput" placeholder="e.g. London, New York, Remote">
+        </div>
+
+        <div class="field form-section active" id="sectionIndustry4">
+          <label>Number of Leads</label>
+          <input type="number" id="leadCountInput" value="25" min="5" max="500">
+        </div>
+
+        <!-- BY COMPANY FIELDS -->
+        <div class="field full form-section" id="sectionCompany1">
+          <label>Company Name</label>
+          <input type="text" id="companyNameInput" placeholder="e.g. Google, Microsoft, Stripe">
+        </div>
+
+        <div class="field full form-section" id="sectionCompany2">
+          <label>Job Titles to Find</label>
+          <div class="tag-input-wrapper" id="companyRoleTagWrapper">
+            <input class="tag-text-input" id="companyRoleTagInput" placeholder="e.g. Software Engineer, Product Manager…">
+          </div>
+          <span class="tag-hint">Press Enter or comma to add each title</span>
+        </div>
+
+        <div class="field form-section" id="sectionCompany3">
+          <label>Max Results</label>
+          <input type="number" id="companyMaxInput" value="50" min="5" max="200">
+        </div>
+
+      </div>
+
+      <button type="submit" class="btn-submit" id="submitBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        Find Leads
+      </button>
+    </form>
+  </div>
+
+  <!-- Progress Card -->
+  <div class="card progress-card" id="progressCard">
+    <div class="progress-header">
+      <div class="spinner"></div>
+      <div>
+        <div class="status-label" id="statusLabel">Starting run…</div>
+        <div class="status-msg" id="statusMsg">Initialising actor</div>
+      </div>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressBar" style="width: 15%"></div>
+    </div>
+  </div>
+
+  <!-- Results Card -->
+  <div class="card results-card" id="resultsCard">
+    <div class="results-header">
+      <div class="results-count">Found <span id="leadCount">0</span> leads</div>
+      <button class="btn-export" id="exportBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Export CSV
+      </button>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th data-col="name">Name <span class="sort-icon">↕</span></th>
+            <th data-col="jobTitle">Job Title <span class="sort-icon">↕</span></th>
+            <th data-col="company">Company <span class="sort-icon">↕</span></th>
+            <th data-col="email">Email <span class="sort-icon">↕</span></th>
+            <th data-col="phone">Phone <span class="sort-icon">↕</span></th>
+            <th data-col="linkedin">LinkedIn <span class="sort-icon">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────
+let currentMode = 'industry';
+let leads = [];
+let sortState = { col: null, asc: true };
+
+const tags = {
+  industry: [],
+  role: [],
+  companyRole: []
+};
+
+// ── Token ─────────────────────────────────────────────────────────────────
+const tokenInput = document.getElementById('tokenInput');
+const savedToken = localStorage.getItem('apify_token');
+if (savedToken) tokenInput.value = savedToken;
+
+document.getElementById('settingsToggle').addEventListener('click', () => {
+  document.getElementById('settingsPanel').classList.toggle('open');
+});
+
+document.getElementById('saveToken').addEventListener('click', () => {
+  const t = tokenInput.value.trim();
+  if (!t) return;
+  localStorage.setItem('apify_token', t);
+  const s = document.getElementById('tokenStatus');
+  s.style.display = 'block';
+  setTimeout(() => s.style.display = '', 3000);
+});
+
+function getToken() {
+  return tokenInput.value.trim() || localStorage.getItem('apify_token') || '';
+}
+
+// ── Mode Toggle ───────────────────────────────────────────────────────────
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeIndustry').classList.toggle('active', mode === 'industry');
+  document.getElementById('modeCompany').classList.toggle('active', mode === 'company');
+
+  document.querySelectorAll('.form-section').forEach(el => {
+    el.classList.remove('active');
+  });
+
+  if (mode === 'industry') {
+    ['sectionIndustry1','sectionIndustry2','sectionIndustry3','sectionIndustry4'].forEach(id => {
+      document.getElementById(id).classList.add('active');
+    });
+  } else {
+    ['sectionCompany1','sectionCompany2','sectionCompany3'].forEach(id => {
+      document.getElementById(id).classList.add('active');
+    });
+  }
+}
+
+document.getElementById('modeIndustry').addEventListener('click', () => setMode('industry'));
+document.getElementById('modeCompany').addEventListener('click', () => setMode('company'));
+
+// ── Tag Input ─────────────────────────────────────────────────────────────
+function makeTagInput(wrapperId, inputId, tagKey) {
+  const wrapper = document.getElementById(wrapperId);
+  const input = document.getElementById(inputId);
+
+  wrapper.addEventListener('click', () => input.focus());
+
+  function addTag(value) {
+    const val = value.trim().replace(/,+$/, '').trim();
+    if (!val || tags[tagKey].includes(val)) return;
+    tags[tagKey].push(val);
+    renderTags(wrapperId, inputId, tagKey);
+  }
+
+  function removeTag(val) {
+    tags[tagKey] = tags[tagKey].filter(t => t !== val);
+    renderTags(wrapperId, inputId, tagKey);
+  }
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); addTag(input.value); input.value = ''; }
+    if (e.key === 'Backspace' && input.value === '' && tags[tagKey].length) {
+      tags[tagKey].pop();
+      renderTags(wrapperId, inputId, tagKey);
+    }
+  });
+
+  input.addEventListener('input', () => {
+    if (input.value.endsWith(',')) { addTag(input.value); input.value = ''; }
+  });
+
+  input.addEventListener('blur', () => {
+    if (input.value.trim()) { addTag(input.value); input.value = ''; }
+  });
+
+  window[`removeTag_${tagKey}`] = removeTag;
+}
+
+function renderTags(wrapperId, inputId, tagKey) {
+  const wrapper = document.getElementById(wrapperId);
+  const input = document.getElementById(inputId);
+  const chips = wrapper.querySelectorAll('.tag');
+  chips.forEach(c => c.remove());
+
+  const frag = document.createDocumentFragment();
+  tags[tagKey].forEach(val => {
+    const chip = document.createElement('span');
+    chip.className = 'tag';
+    chip.innerHTML = `${escHtml(val)}<button type="button" class="tag-remove" onclick="removeTag_${tagKey}('${escHtml(val).replace(/'/g,"\\'")}')">×</button>`;
+    frag.appendChild(chip);
+  });
+  wrapper.insertBefore(frag, input);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+makeTagInput('industryTagWrapper', 'industryTagInput', 'industry');
+makeTagInput('roleTagWrapper', 'roleTagInput', 'role');
+makeTagInput('companyRoleTagWrapper', 'companyRoleTagInput', 'companyRole');
+
+// ── Error Helper ──────────────────────────────────────────────────────────
+function showError(msg) {
+  const el = document.getElementById('errorBanner');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+function clearError() {
+  document.getElementById('errorBanner').classList.remove('visible');
+}
+
+// ── Progress ──────────────────────────────────────────────────────────────
+function showProgress(label, msg, pct) {
+  document.getElementById('progressCard').classList.add('visible');
+  document.getElementById('statusLabel').textContent = label;
+  document.getElementById('statusMsg').textContent = msg || '';
+  document.getElementById('progressBar').style.width = (pct || 15) + '%';
+}
+function hideProgress() {
+  document.getElementById('progressCard').classList.remove('visible');
+}
+
+// ── Sleep ─────────────────────────────────────────────────────────────────
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// ── Apify API ─────────────────────────────────────────────────────────────
+async function startRun(actorId, input, token) {
+  const res = await fetch(
+    `https://api.apify.com/v2/acts/${encodeURIComponent(actorId)}/runs?token=${encodeURIComponent(token)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input)
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `HTTP ${res.status}`);
+  }
+  const { data } = await res.json();
+  return data;
+}
+
+async function pollRun(runId, token) {
+  let pct = 20;
+  while (true) {
+    await sleep(5000);
+    const res = await fetch(
+      `https://api.apify.com/v2/actor-runs/${encodeURIComponent(runId)}?token=${encodeURIComponent(token)}`
+    );
+    if (!res.ok) throw new Error(`Poll failed: HTTP ${res.status}`);
+    const { data } = await res.json();
+
+    const terminal = ['SUCCEEDED','FAILED','ABORTED','TIMED-OUT'];
+    pct = Math.min(pct + 10, terminal.includes(data.status) ? 100 : 85);
+    showProgress(
+      data.status === 'RUNNING' ? 'Running…' : data.status,
+      data.statusMessage || '',
+      pct
+    );
+
+    if (terminal.includes(data.status)) return data;
+  }
+}
+
+async function fetchDataset(datasetId, token) {
+  const res = await fetch(
+    `https://api.apify.com/v2/datasets/${encodeURIComponent(datasetId)}/items?token=${encodeURIComponent(token)}&format=json&clean=true`
+  );
+  if (!res.ok) throw new Error(`Dataset fetch failed: HTTP ${res.status}`);
+  return res.json();
+}
+
+// ── Field Normalisation ───────────────────────────────────────────────────
+function normaliseLead(raw) {
+  return {
+    name:     raw.full_name     || raw.name          || raw.firstName && (raw.firstName + ' ' + (raw.lastName || '')) || '',
+    jobTitle: raw.job_title     || raw.headline       || raw.title    || '',
+    company:  raw.company       || raw.organization   || raw.domain   || '',
+    email:    raw.email         || raw.personal_email || '',
+    phone:    raw.mobile_number || raw.phone          || raw.phoneNumber || '',
+    linkedin: raw.linkedin_url  || raw.profileUrl     || raw.linkedin || ''
+  };
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────
+document.getElementById('searchForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  clearError();
+
+  const token = getToken();
+  if (!token) {
+    showError('Please enter your Apify API token in the settings panel first.');
+    document.getElementById('settingsPanel').classList.add('open');
+    document.getElementById('tokenInput').focus();
+    return;
+  }
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  document.getElementById('resultsCard').classList.remove('visible');
+
+  let actorId, input;
+
+  if (currentMode === 'industry') {
+    if (!tags.industry.length && !tags.role.length) {
+      showError('Please add at least one sector or job role.');
+      submitBtn.disabled = false;
+      return;
+    }
+    actorId = 'code_crafter/leads-finder';
+    input = {
+      jobTitle:   tags.role.length     ? tags.role     : undefined,
+      industry:   tags.industry.length  ? tags.industry  : undefined,
+      location:   document.getElementById('locationInput').value.trim() || undefined,
+      fetchCount: parseInt(document.getElementById('leadCountInput').value) || 25
+    };
+    Object.keys(input).forEach(k => input[k] === undefined && delete input[k]);
+
+  } else {
+    const company = document.getElementById('companyNameInput').value.trim();
+    if (!company) { showError('Please enter a company name.'); submitBtn.disabled = false; return; }
+    actorId = 'harvestapi/linkedin-company-employees';
+    input = {
+      companyName: company,
+      jobTitles:   tags.companyRole.length ? tags.companyRole : undefined,
+      maxResults:  parseInt(document.getElementById('companyMaxInput').value) || 50
+    };
+    Object.keys(input).forEach(k => input[k] === undefined && delete input[k]);
+  }
+
+  try {
+    showProgress('Starting…', 'Launching Apify actor', 10);
+
+    const run = await startRun(actorId, input, token);
+    showProgress('Queued', `Run ID: ${run.id}`, 15);
+
+    const finished = await pollRun(run.id, token);
+
+    if (finished.status !== 'SUCCEEDED') {
+      throw new Error(`Run ended with status: ${finished.status}. ${finished.statusMessage || ''}`);
+    }
+
+    showProgress('Fetching results…', 'Downloading dataset', 95);
+    const raw = await fetchDataset(finished.defaultDatasetId, token);
+
+    leads = raw.map(normaliseLead).filter(l => l.name || l.email);
+    sortState = { col: null, asc: true };
+
+    hideProgress();
+    renderResults(leads);
+
+  } catch (err) {
+    hideProgress();
+    showError(`Error: ${err.message}`);
+    console.error(err);
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+// ── Render Results ────────────────────────────────────────────────────────
+function renderResults(data) {
+  document.getElementById('leadCount').textContent = data.length;
+  document.getElementById('resultsCard').classList.add('visible');
+
+  const tbody = document.getElementById('resultsBody');
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">No leads found. Try broader search criteria.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map(l => `
+    <tr>
+      <td>${escHtml(l.name) || '<span class="muted">—</span>'}</td>
+      <td>${l.jobTitle ? `<span class="pill">${escHtml(l.jobTitle)}</span>` : '<span class="muted">—</span>'}</td>
+      <td>${escHtml(l.company) || '<span class="muted">—</span>'}</td>
+      <td>${l.email ? `<a href="mailto:${escHtml(l.email)}">${escHtml(l.email)}</a>` : '<span class="muted">—</span>'}</td>
+      <td>${l.phone ? `<a href="tel:${escHtml(l.phone)}">${escHtml(l.phone)}</a>` : '<span class="muted">—</span>'}</td>
+      <td>${l.linkedin ? `<a href="${escHtml(l.linkedin)}" target="_blank" rel="noopener">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        Profile
+      </a>` : '<span class="muted">—</span>'}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Sort ──────────────────────────────────────────────────────────────────
+document.querySelectorAll('thead th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortState.col === col) sortState.asc = !sortState.asc;
+    else { sortState.col = col; sortState.asc = true; }
+
+    document.querySelectorAll('thead th').forEach(t => t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    th.querySelector('.sort-icon').textContent = sortState.asc ? '↑' : '↓';
+
+    const sorted = [...leads].sort((a, b) => {
+      const av = (a[col] || '').toLowerCase();
+      const bv = (b[col] || '').toLowerCase();
+      return sortState.asc ? av.localeCompare(bv) : bv.localeCompare(av);
+    });
+    renderResults(sorted);
+  });
+});
+
+// ── CSV Export ────────────────────────────────────────────────────────────
+document.getElementById('exportBtn').addEventListener('click', () => {
+  if (!leads.length) return;
+  const headers = ['Name','Job Title','Company','Email','Phone','LinkedIn'];
+  const rows = leads.map(l => [l.name, l.jobTitle, l.company, l.email, l.phone, l.linkedin].map(v => `"${(v||'').replace(/"/g,'""')}"`));
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `leads-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+</script>
+</body>
+</html>
