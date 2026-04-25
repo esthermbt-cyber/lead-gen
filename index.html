@@ -3,575 +3,678 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lead Generation — Apify</title>
+<title>Lead Intel — Apify</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg: #0f172a;
-    --surface: #1e293b;
-    --surface2: #273549;
-    --border: #334155;
-    --accent: #3b82f6;
-    --accent-hover: #2563eb;
-    --accent-dim: rgba(59,130,246,.15);
-    --text: #f1f5f9;
-    --muted: #94a3b8;
-    --success: #22c55e;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --radius: 10px;
-  }
+:root {
+  --bg:      #080808;
+  --surface: #111111;
+  --border:  #222222;
+  --border2: #2e2e2e;
+  --lime:    #c8f550;
+  --lime-dim: rgba(200,245,80,.10);
+  --text:    #f0ede8;
+  --muted:   #666666;
+  --danger:  #ff4d4d;
+  --mono:    'DM Mono', monospace;
+  --sans:    'Syne', sans-serif;
+}
 
-  html { scroll-behavior: smooth; }
+/* ── Cursor ──────────────────────────────────────────── */
+* { cursor: none !important; }
+#cursor {
+  width: 10px; height: 10px;
+  background: var(--lime);
+  border-radius: 50%;
+  position: fixed;
+  top: 0; left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform .1s ease, width .2s, height .2s;
+  mix-blend-mode: difference;
+}
+#cursor.expand { width: 36px; height: 36px; }
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 24px 16px 48px;
-  }
+/* ── Base ────────────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-  /* ── Layout ────────────────────────────────────── */
-  .container { max-width: 960px; margin: 0 auto; }
+/* ── Header ──────────────────────────────────────────── */
+.site-header {
+  padding: 32px 48px 0;
+  position: relative;
+}
+.header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: .88;
+  letter-spacing: -.04em;
+}
+.wordmark-lead {
+  font-size: clamp(64px, 10vw, 120px);
+  font-weight: 800;
+  color: var(--text);
+}
+.wordmark-intel {
+  font-size: clamp(64px, 10vw, 120px);
+  font-weight: 800;
+  color: var(--lime);
+}
+.header-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  padding-top: 8px;
+}
+.header-tag {
+  font-family: var(--mono);
+  font-size: .65rem;
+  color: var(--muted);
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
 
-  /* ── Header ────────────────────────────────────── */
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .logo-icon {
-    width: 36px; height: 36px;
-    background: var(--accent);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-  }
-  .logo h1 { font-size: 1.2rem; font-weight: 700; letter-spacing: -.3px; }
-  .logo p { font-size: .75rem; color: var(--muted); margin-top: 1px; }
+/* Settings toggle */
+.settings-toggle {
+  background: transparent;
+  border: 1px solid var(--border2);
+  padding: 8px 14px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: .72rem;
+  letter-spacing: .08em;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: border-color .2s, color .2s;
+}
+.settings-toggle:hover { border-color: var(--lime); color: var(--text); }
+.settings-toggle svg { width: 13px; height: 13px; }
 
-  /* ── Settings panel ────────────────────────────── */
-  .settings-toggle {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: .85rem;
-    color: var(--muted);
-    transition: border-color .2s, color .2s;
-  }
-  .settings-toggle:hover { border-color: var(--accent); color: var(--text); }
-  .settings-toggle svg { width: 16px; height: 16px; flex-shrink: 0; }
+.header-rule {
+  height: 1px;
+  background: var(--border);
+  margin: 24px 48px 0;
+}
 
-  .settings-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 20px;
-    display: none;
-  }
-  .settings-panel.open { display: block; }
-  .settings-panel label { font-size: .8rem; color: var(--muted); display: block; margin-bottom: 6px; }
-  .settings-panel .field-row { display: flex; gap: 10px; align-items: flex-end; }
-  .settings-panel input {
-    flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-size: .9rem;
-    font-family: monospace;
-    outline: none;
-    transition: border-color .2s;
-  }
-  .settings-panel input:focus { border-color: var(--accent); }
-  .btn-save {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 18px;
-    font-size: .85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background .2s;
-    white-space: nowrap;
-  }
-  .btn-save:hover { background: var(--accent-hover); }
-  .token-status {
-    margin-top: 8px;
-    font-size: .78rem;
-    color: var(--success);
-    display: none;
-  }
+/* ── Settings Panel ───────────────────────────────────── */
+.settings-panel {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 48px;
+  display: none;
+}
+.settings-panel.open { display: block; }
+.settings-label {
+  font-family: var(--mono);
+  font-size: .65rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 10px;
+}
+.settings-row { display: flex; gap: 10px; align-items: stretch; }
+.settings-panel input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: .82rem;
+  outline: none;
+  transition: border-color .2s;
+}
+.settings-panel input:focus { border-color: var(--lime); }
+.btn-save {
+  background: var(--lime);
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  font-family: var(--mono);
+  font-size: .72rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.btn-save:hover { background: #d8ff55; }
+.token-status {
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: .7rem;
+  color: var(--lime);
+  display: none;
+}
+.settings-note {
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: .65rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
 
-  /* ── Card ──────────────────────────────────────── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 20px;
-  }
+/* ── Main layout ─────────────────────────────────────── */
+main { padding: 40px 48px 80px; max-width: 1100px; }
 
-  /* ── Mode Toggle ───────────────────────────────── */
-  .mode-toggle {
-    display: flex;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 4px;
-    width: fit-content;
-    margin-bottom: 24px;
-  }
-  .mode-btn {
-    padding: 8px 20px;
-    border-radius: 6px;
-    border: none;
-    background: transparent;
-    color: var(--muted);
-    font-size: .85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background .2s, color .2s;
-  }
-  .mode-btn.active {
-    background: var(--accent);
-    color: #fff;
-  }
+/* ── Mode Tabs ───────────────────────────────────────── */
+.mode-tabs {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+.mode-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: 0 0 14px;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: .9rem;
+  font-weight: 600;
+  letter-spacing: .03em;
+  transition: color .2s, border-color .2s;
+}
+.mode-btn.active { color: var(--lime); border-bottom-color: var(--lime); }
+.mode-btn:hover:not(.active) { color: var(--text); }
 
-  /* ── Form ──────────────────────────────────────── */
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+/* ── Error Banner ────────────────────────────────────── */
+.error-banner {
+  border-left: 2px solid var(--danger);
+  padding: 10px 16px;
+  font-family: var(--mono);
+  font-size: .8rem;
+  color: #ff9999;
+  margin-bottom: 28px;
+  display: none;
+  background: rgba(255,77,77,.06);
+}
+.error-banner.visible { display: block; }
 
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  .field.full { grid-column: 1 / -1; }
+/* ── Form Zones ──────────────────────────────────────── */
+.form-section { display: none; }
+.form-section.active { display: contents; }
 
-  .field label {
-    font-size: .78rem;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: .05em;
-  }
+.query-zones { display: flex; flex-direction: column; gap: 0; }
 
-  .field input[type="text"],
-  .field input[type="number"] {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-size: .9rem;
-    font-family: 'Inter', sans-serif;
-    outline: none;
-    transition: border-color .2s;
-    width: 100%;
-  }
-  .field input:focus { border-color: var(--accent); }
+.zone {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  border-top: 1px solid var(--border);
+  padding: 24px 0;
+  gap: 24px;
+  align-items: start;
+}
+.zone:last-of-type { border-bottom: 1px solid var(--border); }
 
-  /* ── Tag Input ─────────────────────────────────── */
-  .tag-input-wrapper {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 6px 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    cursor: text;
-    min-height: 44px;
-    align-items: center;
-    transition: border-color .2s;
-  }
-  .tag-input-wrapper:focus-within { border-color: var(--accent); }
+.zone-num {
+  font-family: var(--mono);
+  font-size: .65rem;
+  color: var(--muted);
+  letter-spacing: .1em;
+  padding-top: 3px;
+}
+.zone-body { display: flex; flex-direction: column; gap: 8px; }
 
-  .tag {
-    background: var(--accent-dim);
-    color: var(--accent);
-    border: 1px solid rgba(59,130,246,.3);
-    border-radius: 5px;
-    padding: 3px 8px;
-    font-size: .8rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    white-space: nowrap;
-  }
-  .tag-remove {
-    background: none;
-    border: none;
-    color: var(--accent);
-    cursor: pointer;
-    font-size: .9rem;
-    line-height: 1;
-    padding: 0;
-    opacity: .7;
-    display: flex; align-items: center;
-  }
-  .tag-remove:hover { opacity: 1; }
+.zone-label {
+  font-family: var(--mono);
+  font-size: .65rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.zone-sublabel {
+  font-family: var(--mono);
+  font-size: .6rem;
+  color: #444;
+  margin-top: -4px;
+}
 
-  .tag-text-input {
-    border: none;
-    background: transparent;
-    color: var(--text);
-    font-size: .9rem;
-    font-family: 'Inter', sans-serif;
-    outline: none;
-    flex: 1;
-    min-width: 120px;
-    padding: 3px 2px;
-  }
-  .tag-hint { font-size: .72rem; color: var(--muted); margin-top: 4px; }
+/* Text / Number inputs */
+.zone input[type="text"],
+.zone input[type="number"] {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border2);
+  padding: 8px 0;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 1rem;
+  font-weight: 600;
+  outline: none;
+  width: 100%;
+  transition: border-color .2s;
+}
+.zone input:focus { border-bottom-color: var(--lime); }
+.zone input::placeholder { color: #333; font-weight: 400; }
 
-  /* ── Submit Button ─────────────────────────────── */
-  .btn-submit {
-    margin-top: 20px;
-    width: 100%;
-    padding: 14px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background .2s, transform .1s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-  .btn-submit:hover:not(:disabled) { background: var(--accent-hover); }
-  .btn-submit:active:not(:disabled) { transform: scale(.99); }
-  .btn-submit:disabled { opacity: .5; cursor: not-allowed; }
+/* Inline pair */
+.zone-inline { display: flex; gap: 40px; }
+.zone-inline .zone-field { flex: 1; display: flex; flex-direction: column; gap: 8px; }
 
-  /* ── Progress ──────────────────────────────────── */
-  .progress-card { display: none; }
-  .progress-card.visible { display: block; }
+/* ── Tag Input ───────────────────────────────────────── */
+.tag-input-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  border-bottom: 1px solid var(--border2);
+  padding: 6px 0 8px;
+  min-height: 40px;
+  transition: border-color .2s;
+}
+.tag-input-wrapper:focus-within { border-bottom-color: var(--lime); }
 
-  .progress-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-  .spinner {
-    width: 18px; height: 18px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin .8s linear infinite;
-    flex-shrink: 0;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+.tag {
+  font-family: var(--mono);
+  font-size: .72rem;
+  border: 1px solid var(--lime);
+  color: var(--lime);
+  padding: 3px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: .03em;
+}
+.tag-remove {
+  background: none;
+  border: none;
+  color: var(--lime);
+  font-size: .8rem;
+  line-height: 1;
+  padding: 0;
+  opacity: .6;
+}
+.tag-remove:hover { opacity: 1; }
 
-  .status-label { font-size: .9rem; font-weight: 500; }
-  .status-msg { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+.tag-text-input {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: .95rem;
+  font-weight: 600;
+  outline: none;
+  min-width: 140px;
+  flex: 1;
+}
+.zone-hint {
+  font-family: var(--mono);
+  font-size: .62rem;
+  color: #444;
+  letter-spacing: .06em;
+}
 
-  .progress-bar-track {
-    height: 6px;
-    background: var(--bg);
-    border-radius: 99px;
-    overflow: hidden;
-    margin-top: 12px;
-  }
-  .progress-bar-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 99px;
-    transition: width .4s ease;
-    animation: progress-pulse 2s ease-in-out infinite;
-  }
-  @keyframes progress-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: .6; }
-  }
+/* ── Submit ──────────────────────────────────────────── */
+.submit-zone {
+  margin-top: 40px;
+  position: relative;
+  overflow: hidden;
+}
+.btn-submit {
+  width: 100%;
+  padding: 20px 32px;
+  background: var(--lime);
+  color: #000;
+  border: none;
+  font-family: var(--sans);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  transition: color .3s;
+}
+.btn-submit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #000;
+  transform: translateX(-101%) skewX(-12deg);
+  transition: transform .35s cubic-bezier(.4,0,.2,1);
+}
+.btn-submit:hover::before { transform: translateX(0) skewX(-12deg); }
+.btn-submit:hover { color: var(--lime); }
+.btn-submit:disabled { opacity: .3; }
+.btn-submit span, .btn-submit svg { position: relative; z-index: 1; }
+.btn-submit svg { width: 20px; height: 20px; }
 
-  /* ── Results ───────────────────────────────────── */
-  .results-card { display: none; }
-  .results-card.visible { display: block; }
+/* ── Progress ────────────────────────────────────────── */
+.progress-section { display: none; padding: 40px 0; }
+.progress-section.visible { display: block; }
 
-  .results-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .results-count { font-size: .95rem; font-weight: 600; }
-  .results-count span { color: var(--accent); }
+.scan-track {
+  height: 1px;
+  background: var(--border);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.scan-line {
+  position: absolute;
+  top: 0; left: -30%;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--lime), transparent);
+  animation: scan 1.4s ease-in-out infinite;
+}
+@keyframes scan {
+  0%   { left: -30%; }
+  100% { left: 100%; }
+}
 
-  .btn-export {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    padding: 8px 16px;
-    font-size: .82rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: border-color .2s, background .2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn-export:hover { border-color: var(--accent); background: var(--accent-dim); }
+.progress-text {
+  font-family: var(--mono);
+  font-size: .78rem;
+  color: var(--lime);
+  letter-spacing: .08em;
+}
+.progress-sub {
+  font-family: var(--mono);
+  font-size: .65rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
 
-  /* ── Table ─────────────────────────────────────── */
-  .table-wrapper {
-    overflow-x: auto;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: .82rem;
-    min-width: 680px;
-  }
-  thead th {
-    background: var(--surface2);
-    padding: 11px 14px;
-    text-align: left;
-    font-size: .72rem;
-    font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: .05em;
-    position: sticky;
-    top: 0;
-    cursor: pointer;
-    user-select: none;
-    white-space: nowrap;
-  }
-  thead th:hover { color: var(--text); }
-  thead th .sort-icon { margin-left: 4px; opacity: .4; }
-  thead th.sorted .sort-icon { opacity: 1; color: var(--accent); }
+/* ── Results ─────────────────────────────────────────── */
+.results-section { display: none; }
+.results-section.visible { display: block; }
 
-  tbody tr {
-    border-top: 1px solid var(--border);
-    transition: background .15s;
-  }
-  tbody tr:hover { background: var(--surface2); }
+.results-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding: 24px 0 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.results-headline {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -.03em;
+}
+.results-headline em {
+  font-style: normal;
+  color: var(--lime);
+}
+.btn-export {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: .7rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  padding: 0;
+  transition: color .2s;
+}
+.btn-export:hover { color: var(--lime); }
 
-  td {
-    padding: 10px 14px;
-    vertical-align: middle;
-    color: var(--text);
-    max-width: 220px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  td.muted { color: var(--muted); }
+/* ── Table ───────────────────────────────────────────── */
+.table-wrapper { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+  min-width: 700px;
+}
+thead th {
+  text-align: left;
+  padding: 10px 16px 10px 0;
+  font-family: var(--mono);
+  font-size: .6rem;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+thead th:hover { color: var(--text); }
+thead th.sorted { color: var(--lime); }
+.sort-icon { margin-left: 4px; opacity: .4; }
+thead th.sorted .sort-icon { opacity: 1; }
 
-  td a {
-    color: var(--accent);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-  td a:hover { text-decoration: underline; }
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background .12s;
+  animation: rowIn .3s ease both;
+}
+tbody tr:hover { background: rgba(200,245,80,.04); }
 
-  .pill {
-    display: inline-block;
-    background: var(--accent-dim);
-    color: var(--accent);
-    border-radius: 4px;
-    padding: 2px 7px;
-    font-size: .72rem;
-    font-weight: 600;
-  }
+@keyframes rowIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-  /* ── Error ─────────────────────────────────────── */
-  .error-banner {
-    background: rgba(239,68,68,.12);
-    border: 1px solid rgba(239,68,68,.35);
-    border-radius: 8px;
-    padding: 12px 16px;
-    font-size: .85rem;
-    color: #fca5a5;
-    margin-bottom: 16px;
-    display: none;
-  }
-  .error-banner.visible { display: block; }
+td {
+  padding: 14px 16px 14px 0;
+  vertical-align: middle;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+td:first-child {
+  font-family: var(--mono);
+  font-size: .62rem;
+  color: var(--muted);
+  width: 36px;
+  padding-right: 12px;
+}
 
-  /* ── Form section hide/show ─────────────────────── */
-  .form-section { display: none; }
-  .form-section.active { display: contents; }
+td a { color: var(--lime); text-decoration: none; }
+td a:hover { text-decoration: underline; }
+td.dim { color: var(--muted); font-family: var(--mono); font-size: .72rem; }
 
-  /* ── Empty state ────────────────────────────────── */
-  .empty {
-    text-align: center;
-    padding: 48px 24px;
-    color: var(--muted);
-  }
-  .empty svg { margin-bottom: 12px; opacity: .4; }
-  .empty p { font-size: .9rem; }
+.role-tag {
+  font-family: var(--mono);
+  font-size: .68rem;
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 2px 7px;
+  letter-spacing: .03em;
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 640px) {
+  .site-header { padding: 20px 20px 0; }
+  .header-rule { margin-inline: 20px; }
+  .settings-panel { padding: 16px 20px; }
+  main { padding: 28px 20px 60px; }
+  .zone { grid-template-columns: 52px 1fr; }
+  .zone-inline { flex-direction: column; gap: 20px; }
+}
 </style>
 </head>
 <body>
-<div class="container">
 
-  <!-- Header -->
-  <div class="header">
-    <div class="logo">
-      <div class="logo-icon">🎯</div>
-      <div>
-        <h1>Lead Generation</h1>
-        <p>Powered by Apify</p>
-      </div>
+<!-- Custom cursor -->
+<div id="cursor"></div>
+
+<!-- ── Header ─────────────────────────────────────────── -->
+<header class="site-header">
+  <div class="header-top">
+    <div class="wordmark">
+      <span class="wordmark-lead">LEAD</span>
+      <span class="wordmark-intel">INTEL</span>
     </div>
-    <button class="settings-toggle" id="settingsToggle">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
-      </svg>
-      API Settings
-    </button>
+    <div class="header-meta">
+      <span class="header-tag">Powered by Apify</span>
+      <button class="settings-toggle" id="settingsToggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+        API Settings
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="header-rule"></div>
+
+<!-- ── Settings Panel ─────────────────────────────────── -->
+<div class="settings-panel" id="settingsPanel">
+  <label class="settings-label" for="tokenInput">Apify API Token</label>
+  <div class="settings-row">
+    <input type="password" id="tokenInput" placeholder="apify_api_xxxxxxxxxxxxxxxx" autocomplete="off">
+    <button class="btn-save" id="saveToken">Save</button>
+  </div>
+  <div class="token-status" id="tokenStatus">✓ Token saved</div>
+  <p class="settings-note">Stored in localStorage — never leaves your browser except to api.apify.com<br>Get yours at apify.com/account/integrations</p>
+</div>
+
+<!-- ── Main ───────────────────────────────────────────── -->
+<main>
+
+  <!-- Mode tabs -->
+  <div class="mode-tabs">
+    <button class="mode-btn active" id="modeIndustry" data-mode="industry">By Industry</button>
+    <button class="mode-btn" id="modeCompany" data-mode="company">By Company</button>
   </div>
 
-  <!-- Settings Panel -->
-  <div class="settings-panel" id="settingsPanel">
-    <label for="tokenInput">Apify API Token</label>
-    <div class="field-row">
-      <input type="password" id="tokenInput" placeholder="apify_api_xxxxxxxxxxxxxxxx" autocomplete="off">
-      <button class="btn-save" id="saveToken">Save Token</button>
-    </div>
-    <div class="token-status" id="tokenStatus">✓ Token saved to local storage</div>
-    <p style="margin-top:10px;font-size:.75rem;color:var(--muted)">
-      Your token is stored locally in your browser and never sent anywhere except directly to api.apify.com.
-      Get yours at <strong>apify.com/account/integrations</strong>.
-    </p>
-  </div>
+  <!-- Error -->
+  <div class="error-banner" id="errorBanner"></div>
 
-  <!-- Search Card -->
-  <div class="card">
-    <!-- Mode Toggle -->
-    <div class="mode-toggle">
-      <button class="mode-btn active" id="modeIndustry" data-mode="industry">By Industry</button>
-      <button class="mode-btn" id="modeCompany" data-mode="company">By Company</button>
-    </div>
+  <form id="searchForm">
+    <div class="query-zones">
 
-    <!-- Error Banner -->
-    <div class="error-banner" id="errorBanner"></div>
-
-    <form id="searchForm">
-      <div class="form-grid">
-
-        <!-- BY INDUSTRY FIELDS -->
-        <div class="field full form-section active" id="sectionIndustry1">
-          <label>Sectors / Industries</label>
+      <!-- BY INDUSTRY -->
+      <div class="zone form-section active" id="sectionIndustry1">
+        <span class="zone-num">01</span>
+        <div class="zone-body">
+          <span class="zone-label">Sectors / Industries</span>
           <div class="tag-input-wrapper" id="industryTagWrapper">
-            <input class="tag-text-input" id="industryTagInput" placeholder="e.g. Technology, Finance…">
+            <input class="tag-text-input" id="industryTagInput" placeholder="Technology, Finance…">
           </div>
-          <span class="tag-hint">Press Enter or comma to add each sector</span>
+          <span class="zone-hint">ENTER or comma to add</span>
         </div>
+      </div>
 
-        <div class="field form-section active" id="sectionIndustry2">
-          <label>Job Roles</label>
-          <div class="tag-input-wrapper" id="roleTagWrapper">
-            <input class="tag-text-input" id="roleTagInput" placeholder="e.g. CTO, VP Sales…">
+      <div class="zone form-section active" id="sectionIndustry2">
+        <span class="zone-num">02</span>
+        <div class="zone-body">
+          <div class="zone-inline">
+            <div class="zone-field">
+              <span class="zone-label">Job Roles</span>
+              <div class="tag-input-wrapper" id="roleTagWrapper">
+                <input class="tag-text-input" id="roleTagInput" placeholder="CTO, VP Sales…">
+              </div>
+              <span class="zone-hint">ENTER or comma to add</span>
+            </div>
           </div>
-          <span class="tag-hint">Press Enter or comma to add each role</span>
         </div>
+      </div>
 
-        <div class="field form-section active" id="sectionIndustry3">
-          <label>Location <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:.72rem">(optional)</span></label>
-          <input type="text" id="locationInput" placeholder="e.g. London, New York, Remote">
+      <div class="zone form-section active" id="sectionIndustry3">
+        <span class="zone-num">03</span>
+        <div class="zone-body">
+          <div class="zone-inline">
+            <div class="zone-field">
+              <span class="zone-label">Location <span style="color:#333;text-transform:none;letter-spacing:0;font-size:.6rem">— optional</span></span>
+              <input type="text" id="locationInput" placeholder="London, New York…">
+            </div>
+            <div class="zone-field">
+              <span class="zone-label">Lead Count</span>
+              <input type="number" id="leadCountInput" value="25" min="5" max="500">
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div class="field form-section active" id="sectionIndustry4">
-          <label>Number of Leads</label>
-          <input type="number" id="leadCountInput" value="25" min="5" max="500">
+      <!-- Hidden placeholder so zone numbers don't break -->
+      <div class="form-section active" id="sectionIndustry4" style="display:none"></div>
+
+      <!-- BY COMPANY -->
+      <div class="zone form-section" id="sectionCompany1">
+        <span class="zone-num">01</span>
+        <div class="zone-body">
+          <span class="zone-label">Company Name</span>
+          <input type="text" id="companyNameInput" placeholder="Google, Stripe, OpenAI…">
         </div>
+      </div>
 
-        <!-- BY COMPANY FIELDS -->
-        <div class="field full form-section" id="sectionCompany1">
-          <label>Company Name</label>
-          <input type="text" id="companyNameInput" placeholder="e.g. Google, Microsoft, Stripe">
-        </div>
-
-        <div class="field full form-section" id="sectionCompany2">
-          <label>Job Titles to Find</label>
+      <div class="zone form-section" id="sectionCompany2">
+        <span class="zone-num">02</span>
+        <div class="zone-body">
+          <span class="zone-label">Job Titles</span>
           <div class="tag-input-wrapper" id="companyRoleTagWrapper">
-            <input class="tag-text-input" id="companyRoleTagInput" placeholder="e.g. Software Engineer, Product Manager…">
+            <input class="tag-text-input" id="companyRoleTagInput" placeholder="Software Engineer…">
           </div>
-          <span class="tag-hint">Press Enter or comma to add each title</span>
+          <span class="zone-hint">ENTER or comma to add</span>
         </div>
+      </div>
 
-        <div class="field form-section" id="sectionCompany3">
-          <label>Max Results</label>
+      <div class="zone form-section" id="sectionCompany3">
+        <span class="zone-num">03</span>
+        <div class="zone-body">
+          <span class="zone-label">Max Results</span>
           <input type="number" id="companyMaxInput" value="50" min="5" max="200">
         </div>
-
       </div>
 
+    </div><!-- /query-zones -->
+
+    <div class="submit-zone">
       <button type="submit" class="btn-submit" id="submitBtn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        <span>Find Leads</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
         </svg>
-        Find Leads
       </button>
-    </form>
+    </div>
+  </form>
+
+  <!-- ── Progress ──────────────────────────────────────── -->
+  <div class="progress-section" id="progressCard">
+    <div class="scan-track"><div class="scan-line"></div></div>
+    <div class="progress-text" id="statusLabel">Starting…</div>
+    <div class="progress-sub" id="statusMsg"></div>
   </div>
 
-  <!-- Progress Card -->
-  <div class="card progress-card" id="progressCard">
-    <div class="progress-header">
-      <div class="spinner"></div>
-      <div>
-        <div class="status-label" id="statusLabel">Starting run…</div>
-        <div class="status-msg" id="statusMsg">Initialising actor</div>
-      </div>
-    </div>
-    <div class="progress-bar-track">
-      <div class="progress-bar-fill" id="progressBar" style="width: 15%"></div>
-    </div>
-  </div>
-
-  <!-- Results Card -->
-  <div class="card results-card" id="resultsCard">
+  <!-- ── Results ────────────────────────────────────────── -->
+  <div class="results-section" id="resultsCard">
     <div class="results-header">
-      <div class="results-count">Found <span id="leadCount">0</span> leads</div>
-      <button class="btn-export" id="exportBtn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Export CSV
-      </button>
+      <div class="results-headline"><em id="leadCount">0</em> leads found</div>
+      <button class="btn-export" id="exportBtn">Export CSV</button>
     </div>
     <div class="table-wrapper">
       <table>
         <thead>
           <tr>
+            <th></th>
             <th data-col="name">Name <span class="sort-icon">↕</span></th>
-            <th data-col="jobTitle">Job Title <span class="sort-icon">↕</span></th>
+            <th data-col="jobTitle">Role <span class="sort-icon">↕</span></th>
             <th data-col="company">Company <span class="sort-icon">↕</span></th>
             <th data-col="email">Email <span class="sort-icon">↕</span></th>
             <th data-col="phone">Phone <span class="sort-icon">↕</span></th>
@@ -583,9 +686,20 @@
     </div>
   </div>
 
-</div>
+</main>
 
 <script>
+// ── Cursor ────────────────────────────────────────────────────────────────
+const cur = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cur.style.left = e.clientX + 'px';
+  cur.style.top  = e.clientY + 'px';
+});
+document.querySelectorAll('a,button,input,.tag-input-wrapper').forEach(el => {
+  el.addEventListener('mouseenter', () => cur.classList.add('expand'));
+  el.addEventListener('mouseleave', () => cur.classList.remove('expand'));
+});
+
 // ── State ─────────────────────────────────────────────────────────────────
 let currentMode = 'industry';
 let leads = [];
@@ -720,7 +834,6 @@ function showProgress(label, msg, pct) {
   document.getElementById('progressCard').classList.add('visible');
   document.getElementById('statusLabel').textContent = label;
   document.getElementById('statusMsg').textContent = msg || '';
-  document.getElementById('progressBar').style.width = (pct || 15) + '%';
 }
 function hideProgress() {
   document.getElementById('progressCard').classList.remove('visible');
@@ -872,21 +985,19 @@ function renderResults(data) {
 
   const tbody = document.getElementById('resultsBody');
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">No leads found. Try broader search criteria.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:48px 0;color:var(--muted);font-family:var(--mono);font-size:.78rem;letter-spacing:.08em">NO LEADS FOUND — TRY BROADER CRITERIA</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = data.map(l => `
-    <tr>
-      <td>${escHtml(l.name) || '<span class="muted">—</span>'}</td>
-      <td>${l.jobTitle ? `<span class="pill">${escHtml(l.jobTitle)}</span>` : '<span class="muted">—</span>'}</td>
-      <td>${escHtml(l.company) || '<span class="muted">—</span>'}</td>
-      <td>${l.email ? `<a href="mailto:${escHtml(l.email)}">${escHtml(l.email)}</a>` : '<span class="muted">—</span>'}</td>
-      <td>${l.phone ? `<a href="tel:${escHtml(l.phone)}">${escHtml(l.phone)}</a>` : '<span class="muted">—</span>'}</td>
-      <td>${l.linkedin ? `<a href="${escHtml(l.linkedin)}" target="_blank" rel="noopener">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-        Profile
-      </a>` : '<span class="muted">—</span>'}</td>
+  tbody.innerHTML = data.map((l, i) => `
+    <tr style="animation-delay:${i * 30}ms">
+      <td>${String(i + 1).padStart(2, '0')}</td>
+      <td>${escHtml(l.name) || '<span class="dim">—</span>'}</td>
+      <td>${l.jobTitle ? `<span class="role-tag">${escHtml(l.jobTitle)}</span>` : '<span class="dim">—</span>'}</td>
+      <td>${escHtml(l.company) || '<span class="dim">—</span>'}</td>
+      <td>${l.email ? `<a href="mailto:${escHtml(l.email)}">${escHtml(l.email)}</a>` : '<span class="dim">—</span>'}</td>
+      <td>${l.phone ? `<a href="tel:${escHtml(l.phone)}">${escHtml(l.phone)}</a>` : '<span class="dim">—</span>'}</td>
+      <td>${l.linkedin ? `<a href="${escHtml(l.linkedin)}" target="_blank" rel="noopener">↗ Profile</a>` : '<span class="dim">—</span>'}</td>
     </tr>
   `).join('');
 
